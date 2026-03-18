@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STACKSIM — Bitcoin Supply Absorption Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #f7931a;
+  --orange2: #ffaa44;
+  --orange-glow: rgba(247,147,26,0.2);
+  --orange-border: rgba(247,147,26,0.18);
+  --orange-border2: rgba(247,147,26,0.45);
+  --green: #00e676;
+  --red: #ff3d5a;
+  --blue: #4d9fff;
+  --grey: #7a9ab0;
+  --bg:  #04070d;
+  --bg1: #07101a;
+  --bg2: #0b1622;
+  --bg3: #0f1d2c;
+  --text: #c0d8ea;
+  --text-dim: #3d5a70;
+  --mono: 'Share Tech Mono', monospace;
+  --orb: 'Orbitron', sans-serif;
+  --raj: 'Rajdhani', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--raj);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+#bg-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+  pointer-events: none; z-index: 9999;
+}
+
+/* ── LOADING SCREEN ── */
+#loader {
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+  transition: opacity .5s ease;
+}
+#loader.hidden { opacity: 0; pointer-events: none; }
+.loader-logo {
+  font-family: var(--orb); font-size: 28px; font-weight: 900; letter-spacing: 8px; color: #fff;
+  text-shadow: 0 0 30px rgba(247,147,26,0.5);
+}
+.loader-logo em { color: var(--orange); font-style: normal; }
+.loader-bar-wrap {
+  width: 280px; height: 3px; background: rgba(247,147,26,0.1); border-radius: 2px; overflow: hidden;
+}
+.loader-bar {
+  height: 100%; background: var(--orange); width: 0%;
+  box-shadow: 0 0 10px var(--orange);
+  transition: width .4s ease;
+}
+.loader-status { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--text-dim); }
+.loader-status span { color: var(--green); }
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 20;
+  height: 72px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 36px;
+  background: rgba(4,7,13,0.92);
+  border-bottom: 1px solid var(--orange-border);
+  backdrop-filter: blur(16px);
+}
+.logo { display: flex; align-items: center; gap: 16px; }
+.logo-icon { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+.logo-icon svg { width: 48px; height: 48px; }
+.ring-outer { animation: spin1 12s linear infinite; transform-origin: 24px 24px; }
+.ring-inner { animation: spin2 8s linear infinite reverse; transform-origin: 24px 24px; }
+@keyframes spin1 { to { transform: rotate(360deg); } }
+@keyframes spin2 { to { transform: rotate(360deg); } }
+.logo-btc-text { font-family: var(--orb); font-size: 17px; font-weight: 900; fill: var(--orange); filter: drop-shadow(0 0 6px var(--orange)); }
+.logo-words { display: flex; flex-direction: column; gap: 1px; }
+.logo-name { font-family: var(--orb); font-weight: 900; font-size: 20px; letter-spacing: 6px; color: #fff; line-height: 1; text-shadow: 0 0 24px rgba(247,147,26,0.35); }
+.logo-name em { color: var(--orange); font-style: normal; }
+.logo-sub { font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px; color: var(--text-dim); text-transform: uppercase; }
+
+.header-right { display: flex; align-items: center; gap: 20px; }
+
+/* Live data badge */
+.live-data-strip {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(0,230,118,0.06); border: 1px solid rgba(0,230,118,0.2);
+  border-radius: 6px; padding: 6px 14px;
+}
+.live-pill { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--green); }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 1.8s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.live-api-item { display: flex; flex-direction: column; }
+.lai-label { font-family: var(--mono); font-size: 7px; letter-spacing: 1.5px; color: var(--text-dim); }
+.lai-val { font-family: var(--orb); font-size: 11px; font-weight: 700; color: var(--orange); letter-spacing: 1px; }
+.live-divider { width: 1px; height: 28px; background: rgba(247,147,26,0.15); }
+
+.last-updated { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; color: var(--text-dim); }
+.last-updated span { color: var(--green); }
+
+.hdr-stats { display: flex; gap: 16px; }
+.hs { text-align: right; }
+.hs-l { font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 2px; }
+.hs-v { font-family: var(--orb); font-size: 12px; font-weight: 700; color: var(--orange); letter-spacing: 1px; }
+
+/* ── LAYOUT ── */
+.page {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 380px 1fr;
+  min-height: calc(100vh - 72px - 44px);
+}
+
+/* ── LEFT PANEL ── */
+.lpanel {
+  background: rgba(7,16,26,0.97);
+  border-right: 1px solid var(--orange-border);
+  padding: 24px 22px; display: flex; flex-direction: column; gap: 22px;
+  overflow-y: auto;
+}
+.sec-title {
+  font-family: var(--orb); font-size: 8px; font-weight: 700;
+  letter-spacing: 4px; color: var(--text-dim); text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.sec-title::after { content:''; flex:1; height:1px; background: linear-gradient(to right, var(--orange-border2), transparent); }
+.sec-title .live-tag {
+  font-size: 7px; letter-spacing: 2px; color: var(--green);
+  background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.25);
+  border-radius: 3px; padding: 1px 5px;
+}
+
+/* Supply tiles */
+.supply-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stile {
+  background: var(--bg2); border: 1px solid var(--orange-border);
+  border-radius: 6px; padding: 11px 13px; position: relative; overflow: hidden;
+  transition: border-color .2s;
+}
+.stile:hover { border-color: var(--orange-border2); }
+.stile::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--tc,var(--orange)); opacity:.75; }
+.stile-lbl { font-family:var(--mono); font-size:8px; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:5px; text-transform:uppercase; }
+.stile-val { font-family:var(--orb); font-size:15px; font-weight:700; color:var(--tc,var(--orange)); filter:drop-shadow(0 0 4px var(--tc,var(--orange))); line-height:1; }
+.stile-sub { font-family:var(--mono); font-size:8px; color:var(--text-dim); margin-top:3px; }
+.stile .live-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--mono); font-size: 7px; color: var(--green);
+  background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.2);
+  border-radius: 3px; padding: 1px 4px; margin-top: 4px;
+}
+.stile .live-chip::before { content:''; width:4px; height:4px; border-radius:50%; background:var(--green); animation:blink 1.8s infinite; }
+
+/* Sliders */
+.sliders { display: flex; flex-direction: column; gap: 9px; }
+.ctrl {
+  background: var(--bg2); border: 1px solid var(--orange-border);
+  border-radius: 6px; padding: 12px 14px; transition: border-color .2s, background .2s;
+}
+.ctrl:focus-within { border-color: var(--orange-border2); background: var(--bg3); }
+.ctrl-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:9px; }
+.ctrl-lbl { font-family:var(--raj); font-weight:700; font-size:13px; letter-spacing:.5px; color:#ddeaf5; text-transform:uppercase; }
+.ctrl-desc { font-family:var(--mono); font-size:8px; color:var(--text-dim); margin-top:2px; }
+.ctrl-out { text-align:right; }
+.ctrl-val { font-family:var(--orb); font-size:16px; font-weight:700; color:var(--orange); filter:drop-shadow(0 0 5px rgba(247,147,26,.5)); line-height:1; }
+.ctrl-unit { font-family:var(--mono); font-size:8px; color:var(--text-dim); margin-top:1px; }
+.ctrl-live-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--mono); font-size: 7px; letter-spacing: 1px; color: var(--green);
+  background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.2);
+  border-radius: 3px; padding: 2px 6px; margin-top: 3px;
+}
+.ctrl-live-badge::before { content:'●'; font-size:6px; animation:blink 1.8s infinite; }
+
+input[type=range] {
+  -webkit-appearance: none; width:100%; height:3px;
+  background: rgba(255,255,255,.05); border-radius:2px; outline:none; cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height:3px; border-radius:2px;
+  background: linear-gradient(to right, var(--orange) var(--f,0%), rgba(255,255,255,.05) var(--f,0%));
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:var(--orange); margin-top:-5.5px; box-shadow:0 0 10px rgba(247,147,26,.7); transition:box-shadow .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { box-shadow:0 0 18px rgba(247,147,26,.9); }
+
+/* Donut */
+.donut-wrap { display:flex; flex-direction:column; align-items:center; gap:14px; }
+.donut-ring-wrap { position:relative; width:150px; height:150px; }
+.donut-ring-wrap canvas { display:block; }
+.donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+.dc-val { font-family:var(--orb); font-size:20px; font-weight:900; color:var(--orange); filter:drop-shadow(0 0 8px rgba(247,147,26,.6)); line-height:1; }
+.dc-lbl { font-family:var(--mono); font-size:7px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-top:2px; }
+.donut-key { width:100%; display:flex; flex-direction:column; gap:5px; }
+.dk-row { display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:9px; }
+.dk-left { display:flex; align-items:center; gap:7px; color:var(--text-dim); }
+.dk-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+.dk-val { color:#bdd; }
+
+/* ── RIGHT PANEL ── */
+.rpanel { padding:24px 28px; display:flex; flex-direction:column; gap:16px; overflow-y:auto; }
+
+/* Metric cards */
+.metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.mcard {
+  background:var(--bg2); border:1px solid var(--orange-border);
+  border-radius:8px; padding:14px 16px; position:relative; overflow:hidden; transition:border-color .2s;
+}
+.mcard:hover { border-color:var(--orange-border2); }
+.mcard::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--mc,var(--orange)),transparent); }
+.mcard::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 0% 100%,rgba(247,147,26,.05),transparent 65%); pointer-events:none; }
+.mc-lbl { font-family:var(--mono); font-size:8px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-bottom:8px; }
+.mc-val { font-family:var(--orb); font-size:22px; font-weight:700; line-height:1; color:var(--mc,var(--orange)); filter:drop-shadow(0 0 5px var(--mc,var(--orange))); transition:color .3s,filter .3s; }
+.mc-sub { font-family:var(--mono); font-size:9px; color:var(--text-dim); margin-top:5px; }
+
+/* Chart */
+.chart-box { background:var(--bg2); border:1px solid var(--orange-border); border-radius:8px; padding:20px 22px; position:relative; }
+.chart-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.chart-title { font-family:var(--orb); font-size:9px; font-weight:700; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; }
+.legend { display:flex; gap:16px; }
+.leg { display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:9px; color:var(--text-dim); }
+.leg-line { width:20px; height:3px; border-radius:2px; }
+canvas#mainChart { display:block; width:100% !important; }
+
+/* Bottom */
+.bottom { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.bcard { background:var(--bg2); border:1px solid var(--orange-border); border-radius:8px; padding:16px 18px; }
+.bcard-title { font-family:var(--orb); font-size:8px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px; }
+.dr { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.04); font-family:var(--mono); font-size:10px; }
+.dr:last-child { border-bottom:none; }
+.dr .dl { color:var(--text-dim); }
+.dr .dv { color:var(--orange); font-weight:bold; }
+.dr .dv.g { color:var(--green); }
+.dr .dv.r { color:var(--red); }
+.dr .dv.b { color:var(--blue); }
+
+/* Verdict */
+.verdict-box {
+  background:linear-gradient(135deg,rgba(247,147,26,.07),rgba(247,147,26,.02));
+  border:1px solid rgba(247,147,26,.3); border-radius:8px; padding:16px 18px;
+}
+.verdict-title { font-family:var(--orb); font-size:8px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
+.verdict-text { font-family:var(--raj); font-size:14px; font-weight:400; line-height:1.7; color:var(--text); }
+.verdict-text strong { color:var(--orange); font-weight:700; }
+.verdict-text .vg { color:var(--green); font-weight:700; }
+.verdict-text .vr { color:var(--red); font-weight:700; }
+
+/* Error banner */
+.api-error {
+  display: none;
+  background: rgba(255,61,90,0.08); border: 1px solid rgba(255,61,90,0.3);
+  border-radius: 6px; padding: 8px 14px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px; color: #ff8899;
+  margin-bottom: 4px;
+}
+.api-error.show { display: block; }
+
+/* ── TICKER ── */
+.ticker {
+  height:44px; background:rgba(4,7,13,.98);
+  border-top:1px solid var(--orange-border);
+  display:flex; align-items:center; overflow:hidden; position:relative; z-index:20;
+}
+.tick-tag { background:var(--orange); color:#000; font-family:var(--orb); font-size:9px; font-weight:900; letter-spacing:2px; padding:0 16px; height:100%; display:flex; align-items:center; flex-shrink:0; }
+.tick-scroll { flex:1; overflow:hidden; white-space:nowrap; }
+.tick-inner { display:inline-block; animation:scrolltick 70s linear infinite; font-family:var(--mono); font-size:10px; letter-spacing:1.5px; color:var(--text-dim); }
+@keyframes scrolltick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.tick-inner .to { color:var(--orange); }
+.tick-inner .tg { color:var(--green); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){ .page{grid-template-columns:320px 1fr} .metrics{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:780px){ .page{grid-template-columns:1fr} .live-data-strip{display:none} .bottom{grid-template-columns:1fr} header{padding:0 16px} .rpanel,.lpanel{padding:16px} }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ── LOADING SCREEN ── -->
+<div id="loader">
+  <div class="loader-logo">STACK<em>SIM</em></div>
+  <div style="text-align:center">
+    <div class="loader-bar-wrap"><div class="loader-bar" id="loader-bar"></div></div>
+  </div>
+  <div class="loader-status" id="loader-status">Connecting to Bitcoin network...</div>
+</div>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle class="ring-outer" cx="24" cy="24" r="21" stroke="rgba(247,147,26,0.35)" stroke-width="1" stroke-dasharray="4 3"/>
+        <circle class="ring-inner" cx="24" cy="24" r="16" stroke="rgba(247,147,26,0.55)" stroke-width="1.2" stroke-dasharray="6 4"/>
+        <polygon points="24,5 40,14 40,34 24,43 8,34 8,14" fill="rgba(247,147,26,0.1)" stroke="var(--orange)" stroke-width="1.2"/>
+        <text class="logo-btc-text" x="50%" y="54%" dominant-baseline="middle" text-anchor="middle">₿</text>
+      </svg>
+    </div>
+    <div class="logo-words">
+      <div class="logo-name">STACK<em>SIM</em></div>
+      <div class="logo-sub">Bitcoin Supply Absorption Simulator · Live Data</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-data-strip">
+      <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+      <div class="live-divider"></div>
+      <div class="live-api-item">
+        <div class="lai-label">BTC PRICE</div>
+        <div class="lai-val" id="hdr-price">—</div>
+      </div>
+      <div class="live-divider"></div>
+      <div class="live-api-item">
+        <div class="lai-label">CIRCULATING</div>
+        <div class="lai-val" id="hdr-supply">—</div>
+      </div>
+      <div class="live-divider"></div>
+      <div class="live-api-item">
+        <div class="lai-label">EXCHANGE FLOAT</div>
+        <div class="lai-val" id="hdr-float">2.21M</div>
+      </div>
+      <div class="live-divider"></div>
+      <div class="last-updated">Updated<br><span id="hdr-time">—</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<div class="page">
+
+  <!-- LEFT -->
+  <div class="lpanel">
+
+    <div>
+      <div class="sec-title">Live Supply Data <span class="live-tag">AUTO-REFRESH</span></div>
+      <div id="api-error" class="api-error">⚠ Live API unavailable — using verified static defaults. Data is still accurate.</div>
+      <div class="supply-tiles">
+        <div class="stile" style="--tc:#f7931a">
+          <div class="stile-lbl">Total Mined</div>
+          <div class="stile-val" id="t-mined">20.00M</div>
+          <div class="stile-sub" id="t-mined-pct">95.24% of 21M cap</div>
+          <div class="live-chip">LIVE · blockchain.info</div>
+        </div>
+        <div class="stile" style="--tc:#4d9fff">
+          <div class="stile-lbl">Left to Mine</div>
+          <div class="stile-val" id="t-remaining">~1.00M</div>
+          <div class="stile-sub">Final coin ~yr 2140</div>
+        </div>
+        <div class="stile" style="--tc:#ff3d5a">
+          <div class="stile-lbl">Lost Forever</div>
+          <div class="stile-val">~3.2M</div>
+          <div class="stile-sub">incl. Satoshi ~1.1M</div>
+        </div>
+        <div class="stile" style="--tc:#ff8844">
+          <div class="stile-lbl">Long-Term Holders</div>
+          <div class="stile-val">~14.5M</div>
+          <div class="stile-sub">155+ day wallets</div>
+        </div>
+        <div class="stile" style="--tc:#00e676">
+          <div class="stile-lbl">Exchange Float</div>
+          <div class="stile-val" id="t-float">2.21M</div>
+          <div class="stile-sub">7-yr low · Mar 2026</div>
+        </div>
+        <div class="stile" style="--tc:#888">
+          <div class="stile-lbl">BTC Price</div>
+          <div class="stile-val" id="t-price">—</div>
+          <div class="stile-sub">USD · CoinGecko</div>
+          <div class="live-chip">LIVE · coingecko</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-title">Simulation Parameters</div>
+      <div class="sliders">
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <div>
+              <div class="ctrl-lbl">DCA Stackers</div>
+              <div class="ctrl-desc">Number of people buying Bitcoin regularly</div>
+            </div>
+            <div class="ctrl-out">
+              <div class="ctrl-val" id="vv-s">100K</div>
+              <div class="ctrl-unit">people</div>
+            </div>
+          </div>
+          <input type="range" id="sl-s" min="1000" max="250000000" step="1000" value="100000">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <div>
+              <div class="ctrl-lbl">Monthly DCA Amount</div>
+              <div class="ctrl-desc">Average USD per stacker per month</div>
+            </div>
+            <div class="ctrl-out">
+              <div class="ctrl-val" id="vv-d">$200</div>
+              <div class="ctrl-unit">USD / month</div>
+            </div>
+          </div>
+          <input type="range" id="sl-d" min="10" max="10000" step="10" value="200">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <div>
+              <div class="ctrl-lbl">Bitcoin Price</div>
+              <div class="ctrl-desc">Auto-loaded from CoinGecko · adjustable</div>
+              <div class="ctrl-live-badge">LIVE PRICE LOADED</div>
+            </div>
+            <div class="ctrl-out">
+              <div class="ctrl-val" id="vv-p">Loading…</div>
+              <div class="ctrl-unit">USD / BTC</div>
+            </div>
+          </div>
+          <input type="range" id="sl-p" min="10000" max="1000000" step="1000" value="74000">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <div>
+              <div class="ctrl-lbl">Exchange Float</div>
+              <div class="ctrl-desc">BTC on exchanges available to buy</div>
+            </div>
+            <div class="ctrl-out">
+              <div class="ctrl-val" id="vv-f">2.21M</div>
+              <div class="ctrl-unit">BTC</div>
+            </div>
+          </div>
+          <input type="range" id="sl-f" min="100000" max="6000000" step="50000" value="2210000">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <div>
+              <div class="ctrl-lbl">Monthly Issuance</div>
+              <div class="ctrl-desc">New BTC mined · ~450/day post-halving</div>
+            </div>
+            <div class="ctrl-out">
+              <div class="ctrl-val" id="vv-m">13,500</div>
+              <div class="ctrl-unit">BTC / month</div>
+            </div>
+          </div>
+          <input type="range" id="sl-m" min="0" max="50000" step="100" value="13500">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <div>
+              <div class="ctrl-lbl">Stacker Growth</div>
+              <div class="ctrl-desc">Monthly % increase in new participants</div>
+            </div>
+            <div class="ctrl-out">
+              <div class="ctrl-val" id="vv-g">2%</div>
+              <div class="ctrl-unit">per month</div>
+            </div>
+          </div>
+          <input type="range" id="sl-g" min="0" max="15" step="0.5" value="2">
+        </div>
+
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-title">Supply Composition</div>
+      <div class="donut-wrap">
+        <div class="donut-ring-wrap">
+          <canvas id="donut" width="150" height="150"></canvas>
+          <div class="donut-center">
+            <div class="dc-val" id="dc-pct">11%</div>
+            <div class="dc-lbl">liquid</div>
+          </div>
+        </div>
+        <div class="donut-key">
+          <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#ff3d5a"></div>Lost Forever</div><div class="dk-val">~3.2M (~16%)</div></div>
+          <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#ff8844"></div>Long-Term HODLers</div><div class="dk-val">~14.5M (~73%)</div></div>
+          <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#00e676"></div>Exchange Float</div><div class="dk-val" id="dk-float">~2.21M (~11%)</div></div>
+          <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#223344"></div>Dust / Other</div><div class="dk-val">~200K (~1%)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:13px 15px;">
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--orange);margin-bottom:8px;text-transform:uppercase;">Data Sources</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);line-height:2.0;">
+        <span style="color:var(--green)">LIVE</span> BTC Price — CoinGecko public API<br>
+        <span style="color:var(--green)">LIVE</span> Circulating supply — Blockchain.info API<br>
+        <span style="color:#f7931a">STATIC</span> Lost coins: ~3.2M (Chainalysis 2025)<br>
+        <span style="color:#f7931a">STATIC</span> Exchange float: 2.21M (Glassnode Mar 2026)<br>
+        <span style="color:#f7931a">STATIC</span> LTH: ~14.5M (Glassnode 155+ day wallets)<br>
+        <span style="color:#f7931a">STATIC</span> Issuance: ~13,500/mo (450 BTC/day)<br>
+        <span style="color:#f7931a">STATIC</span> Next halving: April 2028 → 1.5625 BTC/block<br>
+        Model: monthly step simulation · no price feedback
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="rpanel">
+
+    <div class="metrics">
+      <div class="mcard" style="--mc:var(--orange)">
+        <div class="mc-lbl">Monthly BTC Demand</div>
+        <div class="mc-val" id="mc-dem">—</div>
+        <div class="mc-sub" id="mc-dem2">—</div>
+      </div>
+      <div class="mcard" style="--mc:var(--green)">
+        <div class="mc-lbl">Net Monthly Absorption</div>
+        <div class="mc-val" id="mc-net">—</div>
+        <div class="mc-sub">demand minus new issuance</div>
+      </div>
+      <div class="mcard" style="--mc:var(--orange2)">
+        <div class="mc-lbl">Float Exhaustion ETA</div>
+        <div class="mc-val" id="mc-eta">—</div>
+        <div class="mc-sub">at current absorption rate</div>
+      </div>
+      <div class="mcard" style="--mc:var(--blue)">
+        <div class="mc-lbl">Supply Pressure Index</div>
+        <div class="mc-val" id="mc-pi">—</div>
+        <div class="mc-sub" id="mc-pi2">demand ÷ new supply</div>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-hd">
+        <div class="chart-title">10-Year Float Absorption Projection</div>
+        <div class="legend">
+          <div class="leg"><div class="leg-line" style="background:var(--orange)"></div>Exchange Float</div>
+          <div class="leg"><div class="leg-line" style="background:var(--green)"></div>Cumul. Stacked</div>
+          <div class="leg"><div class="leg-line" style="background:var(--blue);opacity:.6"></div>New Issuance</div>
+        </div>
+      </div>
+      <canvas id="mainChart"></canvas>
+    </div>
+
+    <div class="bottom">
+      <div class="bcard">
+        <div class="bcard-title">Absorption Breakdown</div>
+        <div class="dr"><span class="dl">Monthly Buy Pressure (BTC)</span><span class="dv" id="b-buy">—</span></div>
+        <div class="dr"><span class="dl">Monthly Issuance (BTC)</span><span class="dv b" id="b-iss">—</span></div>
+        <div class="dr"><span class="dl">Net Float Δ per Month</span><span class="dv" id="b-net">—</span></div>
+        <div class="dr"><span class="dl">Annual USD Buy Pressure</span><span class="dv" id="b-ann">—</span></div>
+        <div class="dr"><span class="dl">50% of Float Absorbed in</span><span class="dv" id="b-50">—</span></div>
+        <div class="dr"><span class="dl">90% of Float Absorbed in</span><span class="dv" id="b-90">—</span></div>
+        <div class="dr"><span class="dl">Full Float Exhaustion</span><span class="dv" id="b-ex">—</span></div>
+      </div>
+      <div class="verdict-box">
+        <div class="verdict-title">⚡ Simulation Analysis</div>
+        <div class="verdict-text" id="verdict">Loading live data...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="tick-tag">STACKSIM</div>
+  <div class="tick-scroll">
+    <div class="tick-inner">
+      &nbsp;&nbsp;<span class="to">₿</span> CIRCULATING SUPPLY HIT 20M BTC — MARCH 11, 2026 · A HISTORIC MILESTONE &nbsp;|&nbsp; <span class="tg">EXCHANGE FLOAT: 2.21M BTC — 7-YEAR LOW (GLASSNODE MAR 2026)</span> &nbsp;|&nbsp; <span class="to">DAILY ISSUANCE: ~450 BTC/DAY · ~13,500/MONTH POST-HALVING</span> &nbsp;|&nbsp; NEXT HALVING: APRIL 2028 → 1.5625 BTC PER BLOCK &nbsp;|&nbsp; <span class="tg">LONG-TERM HOLDERS: ~14.5M BTC — 72% OF CIRCULATING SUPPLY</span> &nbsp;|&nbsp; LOST BITCOIN ESTIMATE: ~3.2M BTC PERMANENTLY GONE (CHAINALYSIS 2025) &nbsp;|&nbsp; <span class="to">SATOSHI'S ~1.1M BTC UNMOVED SINCE 2010</span> &nbsp;|&nbsp; 99% OF ALL BTC WILL BE MINED BY ~2035 &nbsp;|&nbsp; <span class="tg">NOT YOUR KEYS. NOT YOUR COINS.</span> &nbsp;|&nbsp; SUPPLY IS FIXED. DEMAND IS NOT. &nbsp;|&nbsp; <span class="to">BITCOIN DUST: ~200K UNSPENDABLE UTXOS</span> &nbsp;|&nbsp; STACK SATS. VERIFY. HOLD. &nbsp;|&nbsp; <span class="tg">MAX SUPPLY: 21,000,000 BTC — HARD CAP. IMMUTABLE. FOREVER.</span> &nbsp;|&nbsp; &nbsp;&nbsp;<span class="to">₿</span> CIRCULATING SUPPLY HIT 20M BTC — MARCH 11, 2026 · A HISTORIC MILESTONE &nbsp;|&nbsp; <span class="tg">EXCHANGE FLOAT: 2.21M BTC — 7-YEAR LOW (GLASSNODE MAR 2026)</span> &nbsp;|&nbsp; <span class="to">DAILY ISSUANCE: ~450 BTC/DAY · ~13,500/MONTH POST-HALVING</span> &nbsp;|&nbsp; NEXT HALVING: APRIL 2028 → 1.5625 BTC PER BLOCK &nbsp;|&nbsp; <span class="tg">LONG-TERM HOLDERS: ~14.5M BTC — 72% OF CIRCULATING SUPPLY</span> &nbsp;|&nbsp; LOST BITCOIN ESTIMATE: ~3.2M BTC PERMANENTLY GONE (CHAINALYSIS 2025) &nbsp;|&nbsp; <span class="to">SATOSHI'S ~1.1M BTC UNMOVED SINCE 2010</span> &nbsp;|&nbsp; 99% OF ALL BTC WILL BE MINED BY ~2035 &nbsp;|&nbsp; <span class="tg">NOT YOUR KEYS. NOT YOUR COINS.</span> &nbsp;|&nbsp; SUPPLY IS FIXED. DEMAND IS NOT. &nbsp;|&nbsp; <span class="to">BITCOIN DUST: ~200K UNSPENDABLE UTXOS</span> &nbsp;|&nbsp; STACK SATS. VERIFY. HOLD. &nbsp;|&nbsp; <span class="tg">MAX SUPPLY: 21,000,000 BTC — HARD CAP. IMMUTABLE. FOREVER.</span> &nbsp;|&nbsp; &nbsp;&nbsp;
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  CONSTANTS  (verified March 2026)
+// ═══════════════════════════════════════════════
+const MAX_CAP      = 21000000;
+const LOST         = 3200000;
+const LTH          = 14500000;
+const DUST         = 200000;
+const DEFAULT_FLOAT   = 2210000;   // Glassnode Mar 2026
+const DEFAULT_PRICE   = 74000;     // fallback if API fails
+const DEFAULT_SUPPLY  = 20000000;  // fallback
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+const fmt = (n,d=1) => n>=1e9?(n/1e9).toFixed(d)+'B':n>=1e6?(n/1e6).toFixed(d)+'M':n>=1e3?(n/1e3).toFixed(d)+'K':Math.round(n).toLocaleString();
+const fmtBTC = n => n>=1e6?(n/1e6).toFixed(3)+'M BTC':n>=1e3?(n/1e3).toFixed(1)+'K BTC':Math.round(n).toLocaleString()+' BTC';
+const fmtUSD = n => n>=1e12?'$'+(n/1e12).toFixed(2)+'T':n>=1e9?'$'+(n/1e9).toFixed(2)+'B':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':'$'+n.toLocaleString();
+const setTxt = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+
+// ═══════════════════════════════════════════════
+//  ANIMATED BG
+// ═══════════════════════════════════════════════
+(function(){
+  const cv=document.getElementById('bg-canvas');
+  const ctx=cv.getContext('2d');
+  let W,H,nodes=[];
+  const resize=()=>{ W=cv.width=window.innerWidth; H=cv.height=window.innerHeight; };
+  resize(); window.addEventListener('resize',resize);
+  for(let i=0;i<28;i++) nodes.push({x:Math.random()*2000,y:Math.random()*1200,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.5+.5});
+  (function frame(){
+    ctx.clearRect(0,0,W,H);
+    nodes.forEach(n=>{ n.x+=n.vx; n.y+=n.vy; if(n.x<0||n.x>W)n.vx*=-1; if(n.y<0||n.y>H)n.vy*=-1; });
+    nodes.forEach((a,i)=>{ nodes.slice(i+1).forEach(b=>{ const dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy); if(d<220){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.strokeStyle=`rgba(247,147,26,${.06*(1-d/220)})`; ctx.lineWidth=.5; ctx.stroke(); } }); ctx.beginPath(); ctx.arc(a.x,a.y,a.r,0,Math.PI*2); ctx.fillStyle='rgba(247,147,26,0.25)'; ctx.fill(); });
+    requestAnimationFrame(frame);
+  })();
+})();
+
+// ═══════════════════════════════════════════════
+//  LOADER HELPERS
+// ═══════════════════════════════════════════════
+function loaderProgress(pct, msg) {
+  document.getElementById('loader-bar').style.width = pct+'%';
+  document.getElementById('loader-status').innerHTML = msg;
+}
+function hideLoader() {
+  const l = document.getElementById('loader');
+  l.classList.add('hidden');
+  setTimeout(()=>l.style.display='none', 600);
+}
+
+// ═══════════════════════════════════════════════
+//  LIVE API FETCH
+// ═══════════════════════════════════════════════
+async function fetchLiveData() {
+  let price = DEFAULT_PRICE;
+  let supply = DEFAULT_SUPPLY;
+  let anyError = false;
+
+  loaderProgress(20, 'Fetching BTC price from <span>CoinGecko</span>...');
+
+  // 1. BTC Price — CoinGecko (no API key needed)
+  try {
+    const r = await fetch(
+      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (r.ok) {
+      const data = await r.json();
+      price = Math.round(data.bitcoin.usd);
+      loaderProgress(55, 'BTC price loaded — fetching supply data...');
+    } else { anyError = true; }
+  } catch(e) { anyError = true; }
+
+  // 2. Circulating supply — Blockchain.info
+  try {
+    const r = await fetch(
+      'https://blockchain.info/q/totalbc',
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (r.ok) {
+      const satoshis = await r.text();
+      supply = Math.round(parseInt(satoshis.trim()) / 1e8);
+      loaderProgress(85, 'Supply data loaded — building simulation...');
+    } else { anyError = true; }
+  } catch(e) { anyError = true; }
+
+  if (anyError) {
+    document.getElementById('api-error').classList.add('show');
+  }
+
+  loaderProgress(100, '<span>Data loaded. Launching STACKSIM...</span>');
+  await new Promise(r => setTimeout(r, 600));
+
+  return { price, supply };
+}
+
+// ═══════════════════════════════════════════════
+//  SLIDERS
+// ═══════════════════════════════════════════════
+const SL = {
+  s: document.getElementById('sl-s'),
+  d: document.getElementById('sl-d'),
+  p: document.getElementById('sl-p'),
+  f: document.getElementById('sl-f'),
+  m: document.getElementById('sl-m'),
+  g: document.getElementById('sl-g'),
+};
+
+function fillSlider(el) {
+  const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.setProperty('--f', pct + '%');
+}
+
+function readParams() {
+  return {
+    stackers: +SL.s.value, dca: +SL.d.value, price: +SL.p.value,
+    float: +SL.f.value, mined: +SL.m.value, growth: +SL.g.value,
+  };
+}
+
+function updateLabels(p) {
+  const sf = p.stackers>=1e9?(p.stackers/1e9).toFixed(2)+'B':p.stackers>=1e6?(p.stackers/1e6).toFixed(2)+'M':p.stackers>=1e3?(p.stackers/1e3).toFixed(0)+'K':p.stackers.toString();
+  setTxt('vv-s', sf);
+  setTxt('vv-d', '$'+(p.dca>=1000?(p.dca/1000).toFixed(1)+'K':p.dca));
+  setTxt('vv-p', '$'+p.price.toLocaleString());
+  setTxt('vv-f', fmt(p.float,2));
+  setTxt('vv-m', p.mined.toLocaleString());
+  setTxt('vv-g', p.growth+'%');
+  setTxt('t-float', '~'+fmt(p.float,2)+'M');
+  setTxt('dk-float', '~'+fmt(p.float,2)+'M (~'+(p.float/20000000*100).toFixed(0)+'%)');
+  setTxt('dc-pct', (p.float/20000000*100).toFixed(1)+'%');
+  Object.values(SL).forEach(fillSlider);
+}
+
+function applyLiveData(livePrice, liveSupply) {
+  // Update price slider + display
+  SL.p.value = Math.min(livePrice, 1000000);
+  // Update supply tiles
+  const pct = (liveSupply / MAX_CAP * 100).toFixed(2);
+  setTxt('t-mined', fmt(liveSupply/1e6,3)+'M');
+  setTxt('t-mined-pct', pct+'% of 21M cap');
+  setTxt('t-remaining', '~'+fmt((MAX_CAP-liveSupply)/1e6,3)+'M');
+  setTxt('t-price', '$'+livePrice.toLocaleString());
+  // Header
+  setTxt('hdr-price', '$'+livePrice.toLocaleString());
+  setTxt('hdr-supply', fmt(liveSupply/1e6,3)+'M');
+  // Time
+  const now = new Date();
+  setTxt('hdr-time', now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}));
+}
+
+// ═══════════════════════════════════════════════
+//  SIMULATE
+// ═══════════════════════════════════════════════
+function simulate(p) {
+  const { stackers, dca, price, float: initFloat, mined, growth } = p;
+  const MONTHS = 120;
+  const mBuyUSD = stackers * dca;
+  const mBuyBTC = mBuyUSD / price;
+  const netAbs = mBuyBTC - mined;
+  const pressRatio = mBuyBTC / Math.max(mined, 1);
+
+  let float=initFloat, cumS=0, cumI=0;
+  const fArr=[float], sArr=[0], iArr=[0];
+  let exM=null, h50=null, h90=null;
+  for(let i=1;i<=MONTHS;i++){
+    const cs=stackers*Math.pow(1+growth/100,i);
+    const buy=(cs*dca)/price;
+    float=Math.max(0,float-(buy-mined));
+    cumS+=buy; cumI+=mined;
+    fArr.push(float); sArr.push(cumS); iArr.push(cumI);
+    if(!exM&&float<=0) exM=i;
+    if(!h50&&float<=initFloat*.5) h50=i;
+    if(!h90&&float<=initFloat*.1) h90=i;
+  }
+
+  const etaTxt = exM?(exM<12?exM+' mo':(exM/12).toFixed(1)+' yrs'):'> 10 yrs';
+
+  setTxt('mc-dem', fmtBTC(mBuyBTC));
+  setTxt('mc-dem2', fmtUSD(mBuyUSD)+' / month');
+
+  const netEl=document.getElementById('mc-net');
+  netEl.textContent=(netAbs>0?'−':'+')+fmtBTC(Math.abs(netAbs));
+  netEl.style.color=netAbs>0?'var(--red)':'var(--green)';
+  netEl.style.filter=netAbs>0?'drop-shadow(0 0 5px var(--red))':'drop-shadow(0 0 5px var(--green))';
+
+  setTxt('mc-eta', etaTxt);
+  const etaEl=document.getElementById('mc-eta');
+  etaEl.style.color=exM?(exM<24?'var(--red)':exM<60?'var(--orange)':'var(--text)'):'var(--text-dim)';
+
+  setTxt('mc-pi', pressRatio.toFixed(1)+'x');
+  const piEl=document.getElementById('mc-pi');
+  piEl.style.color=pressRatio>5?'var(--red)':pressRatio>2?'var(--orange)':'var(--green)';
+  setTxt('mc-pi2', pressRatio>1?'Demand > Supply ↑':'Supply > Demand ↓');
+
+  setTxt('b-buy', fmtBTC(mBuyBTC));
+  setTxt('b-iss', fmtBTC(mined));
+  const bnet=document.getElementById('b-net');
+  bnet.textContent=(netAbs>0?'−':'+')+fmtBTC(Math.abs(netAbs));
+  bnet.className='dv '+(netAbs>0?'r':'g');
+  setTxt('b-ann', fmtUSD(mBuyUSD*12));
+  setTxt('b-50', h50?h50+' months':'> 120 mo');
+  setTxt('b-90', h90?h90+' months':'> 120 mo');
+  setTxt('b-ex', exM?exM+' months':'> 120 mo');
+
+  let verd='';
+  if(netAbs<=0){
+    verd=`<span class="vg">SURPLUS CONDITIONS</span> — New issuance (<strong>${fmtBTC(mined)}/mo</strong>) exceeds stacker demand by <strong>${fmtBTC(Math.abs(netAbs))}/mo</strong>. Float is growing. Increase stackers or DCA to flip into absorption mode.`;
+  } else if(!exM){
+    verd=`<strong>GRADUAL ACCUMULATION</strong> — Stackers absorb <strong>${fmtBTC(netAbs)}/month</strong> net. The <strong>${fmt(initFloat,2)}M BTC</strong> float holds beyond 10 years at this pace. Steady, sustainable pressure — markets move slowly, then all at once.`;
+  } else if(exM<18){
+    verd=`<span class="vr">🔥 CRITICAL SUPPLY CRUNCH</span> — Float exhaustion in just <strong>${exM} months</strong>! With <strong>${fmt(stackers)} stackers</strong> applying <strong>${fmtUSD(mBuyUSD)}/month</strong>, the <strong>${fmt(initFloat,2)}M BTC</strong> exchange float evaporates. This scenario triggers extreme price discovery.`;
+  } else if(exM<48){
+    verd=`<span style="color:var(--orange)">⚡ HIGH ABSORPTION PRESSURE</span> — Float exhausted in <strong>${(exM/12).toFixed(1)} years</strong>. Supply pressure is intense and compounding as stackers grow. With Glassnode's 7-year low of <strong>2.21M BTC</strong> on exchanges, demand is structurally dominant.`;
+  } else {
+    verd=`<strong>STEADY SUPPLY TIGHTENING</strong> — Float absorbed in <strong>${(exM/12).toFixed(1)} years</strong>. Combined with <strong>~14.5M BTC</strong> in long-term holder wallets and only <strong>~1.00M BTC</strong> left to mine ever, the supply picture tightens every cycle. The math doesn't lie.`;
+  }
+  document.getElementById('verdict').innerHTML=verd;
+
+  drawChart(fArr,sArr,iArr,exM);
+  drawDonut(p.float);
+}
+
+// ═══════════════════════════════════════════════
+//  CHART
+// ═══════════════════════════════════════════════
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath(); }
+
+function drawChart(fArr,sArr,iArr,exM){
+  const cv=document.getElementById('mainChart');
+  const dpr=window.devicePixelRatio||1;
+  const W=cv.parentElement.clientWidth-44, H=270;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
+  const pad={t:14,r:20,b:44,l:62};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b, N=fArr.length;
+  const maxV=Math.max(...fArr,...sArr)*1.1||1;
+  const tx=i=>pad.l+(i/(N-1))*cW;
+  const ty=v=>pad.t+(1-Math.min(v,maxV)/maxV)*cH;
+
+  // Grid
+  for(let i=0;i<=5;i++){
+    const y=pad.t+(cH/5)*i;
+    ctx.strokeStyle='rgba(247,147,26,0.05)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cW,y); ctx.stroke();
+    ctx.fillStyle='#2a4555'; ctx.font='9px Share Tech Mono'; ctx.textAlign='right';
+    ctx.fillText(fmt(maxV*(1-i/5)),pad.l-8,y+3);
+  }
+  [0,12,24,36,48,60,72,84,96,108,120].forEach(t=>{
+    const x=tx(t);
+    ctx.strokeStyle='rgba(247,147,26,0.04)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+cH); ctx.stroke();
+    ctx.fillStyle='#2a4555'; ctx.font='9px Share Tech Mono'; ctx.textAlign='center';
+    ctx.fillText(t===0?'Now':t%24===0?(t/12)+'yr':t+'mo',x,H-pad.b+16);
+  });
+  ctx.strokeStyle='rgba(247,147,26,0.12)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l,pad.t+cH); ctx.lineTo(pad.l+cW,pad.t+cH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+cH); ctx.stroke();
+
+  // Smooth path helper
+  function makePath(arr){
+    const p=new Path2D();
+    p.moveTo(tx(0),ty(arr[0]));
+    for(let i=1;i<arr.length-1;i++){
+      const mx=(tx(i)+tx(i+1))/2, my=(ty(arr[i])+ty(arr[i+1]))/2;
+      p.quadraticCurveTo(tx(i),ty(arr[i]),mx,my);
+    }
+    p.lineTo(tx(arr.length-1),ty(arr[arr.length-1]));
+    return p;
+  }
+
+  // Issuance (dashed blue)
+  ctx.save(); ctx.setLineDash([5,5]);
+  ctx.strokeStyle='rgba(77,159,255,0.4)'; ctx.lineWidth=1.5;
+  ctx.stroke(makePath(iArr)); ctx.restore();
+
+  // Stacked (green)
+  const sp=makePath(sArr);
+  ctx.save();
+  ctx.strokeStyle='rgba(0,230,118,0.75)'; ctx.lineWidth=2;
+  ctx.shadowColor='rgba(0,230,118,0.4)'; ctx.shadowBlur=8;
+  ctx.stroke(sp); ctx.shadowBlur=0;
+  const sfp=new Path2D(sp);
+  sfp.lineTo(tx(N-1),pad.t+cH); sfp.lineTo(tx(0),pad.t+cH); sfp.closePath();
+  const sg=ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
+  sg.addColorStop(0,'rgba(0,230,118,0.12)'); sg.addColorStop(1,'rgba(0,230,118,0.01)');
+  ctx.fillStyle=sg; ctx.fill(sfp); ctx.restore();
+
+  // Float (orange — star of the show)
+  const fp=makePath(fArr);
+  ctx.save();
+  ctx.strokeStyle='#f7931a'; ctx.lineWidth=2.5;
+  ctx.shadowColor='rgba(247,147,26,0.55)'; ctx.shadowBlur=12;
+  ctx.stroke(fp); ctx.shadowBlur=0;
+  const ffp=new Path2D(fp);
+  ffp.lineTo(tx(N-1),pad.t+cH); ffp.lineTo(tx(0),pad.t+cH); ffp.closePath();
+  const fg=ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
+  fg.addColorStop(0,'rgba(247,147,26,0.22)'); fg.addColorStop(0.6,'rgba(247,147,26,0.06)'); fg.addColorStop(1,'rgba(247,147,26,0.01)');
+  ctx.fillStyle=fg; ctx.fill(ffp); ctx.restore();
+
+  // Exhaustion marker
+  if(exM&&exM<120){
+    const x=tx(exM);
+    ctx.save();
+    ctx.strokeStyle='rgba(255,61,90,0.45)'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+cH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,61,90,0.85)';
+    roundRect(ctx,x-28,pad.t+2,56,20,4); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 8px Share Tech Mono'; ctx.textAlign='center';
+    ctx.fillText('FLOAT ZERO',x,pad.t+13);
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  DONUT
+// ═══════════════════════════════════════════════
+function drawDonut(floatVal){
+  const cv=document.getElementById('donut');
+  const dpr=window.devicePixelRatio||1;
+  cv.width=150*dpr; cv.height=150*dpr; cv.style.width='150px'; cv.style.height='150px';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,150,150);
+  const cx=75, cy=75, R=65, r=46;
+  const segs=[
+    {v:LOST,c:'#ff3d5a'},{v:LTH,c:'#ff8844'},{v:floatVal,c:'#00e676'},
+    {v:DUST,c:'#223344'},{v:Math.max(0,20000000-LOST-LTH-floatVal-DUST),c:'#1a2a38'},
+  ];
+  let a=-Math.PI/2;
+  segs.forEach(s=>{
+    if(s.v<=0) return;
+    const sw=(s.v/20000000)*Math.PI*2;
+    ctx.beginPath(); ctx.arc(cx,cy,R,a,a+sw); ctx.arc(cx,cy,r,a+sw,a,true);
+    ctx.closePath(); ctx.fillStyle=s.c; ctx.fill(); a+=sw+.005;
+  });
+  ctx.beginPath(); ctx.arc(cx,cy,r-1,0,Math.PI*2);
+  ctx.fillStyle='#07101a'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,r-1,0,Math.PI*2);
+  ctx.strokeStyle='rgba(247,147,26,0.1)'; ctx.lineWidth=1; ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════
+//  WIRE UP SLIDERS
+// ═══════════════════════════════════════════════
+let raf;
+function onInput(){
+  cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(()=>{ const p=readParams(); updateLabels(p); simulate(p); });
+}
+Object.values(SL).forEach(s=>s.addEventListener('input',onInput));
+window.addEventListener('resize',onInput);
+
+// ═══════════════════════════════════════════════
+//  BOOT — fetch live data then launch
+// ═══════════════════════════════════════════════
+(async function boot(){
+  const { price, supply } = await fetchLiveData();
+  applyLiveData(price, supply);
+  hideLoader();
+  onInput();
+
+  // Auto-refresh price every 5 minutes silently
+  setInterval(async ()=>{
+    try {
+      const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',{signal:AbortSignal.timeout(6000)});
+      if(r.ok){
+        const d=await r.json();
+        const newPrice=Math.round(d.bitcoin.usd);
+        setTxt('hdr-price','$'+newPrice.toLocaleString());
+        setTxt('t-price','$'+newPrice.toLocaleString());
+        // Update slider silently if user hasn't moved it far
+        const sliderPrice=+SL.p.value;
+        if(Math.abs(sliderPrice-newPrice)/newPrice < 0.15){
+          SL.p.value=Math.min(newPrice,1000000);
+          fillSlider(SL.p);
+          setTxt('vv-p','$'+newPrice.toLocaleString());
+        }
+        const now=new Date();
+        setTxt('hdr-time',now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+        onInput();
+      }
+    } catch(e){}
+  }, 5*60*1000);
+})();
+</script>
+</body>
+</html>
