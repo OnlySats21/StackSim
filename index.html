@@ -1,4 +1,4 @@
-<index.html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -27,7 +27,7 @@
   --raj: 'Rajdhani', sans-serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 14px; }
+html { font-size: 16px; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -128,7 +128,7 @@ header {
   overflow-y: auto;
 }
 .sec-title {
-  font-family: var(--orb); font-size: 8px; font-weight: 700;
+  font-family: var(--orb); font-size: 10px; font-weight: 700;
   letter-spacing: 4px; color: var(--text-dim); text-transform: uppercase;
   display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
 }
@@ -148,9 +148,9 @@ header {
 }
 .stile:hover { border-color: var(--orange-border2); }
 .stile::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--tc,var(--orange)); opacity:.75; }
-.stile-lbl { font-family:var(--mono); font-size:8px; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:5px; text-transform:uppercase; }
-.stile-val { font-family:var(--orb); font-size:15px; font-weight:700; color:var(--tc,var(--orange)); filter:drop-shadow(0 0 4px var(--tc,var(--orange))); line-height:1; }
-.stile-sub { font-family:var(--mono); font-size:8px; color:var(--text-dim); margin-top:3px; }
+.stile-lbl { font-family:var(--mono); font-size:10px; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:5px; text-transform:uppercase; }
+.stile-val { font-family:var(--orb); font-size:17px; font-weight:700; color:var(--tc,var(--orange)); filter:drop-shadow(0 0 4px var(--tc,var(--orange))); line-height:1; }
+.stile-sub { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:3px; }
 .stile .live-chip {
   display: inline-flex; align-items: center; gap: 3px;
   font-family: var(--mono); font-size: 7px; color: var(--green);
@@ -167,11 +167,11 @@ header {
 }
 .ctrl:focus-within { border-color: var(--orange-border2); background: var(--bg3); }
 .ctrl-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:9px; }
-.ctrl-lbl { font-family:var(--raj); font-weight:700; font-size:13px; letter-spacing:.5px; color:#ddeaf5; text-transform:uppercase; }
-.ctrl-desc { font-family:var(--mono); font-size:8px; color:var(--text-dim); margin-top:2px; }
+.ctrl-lbl { font-family:var(--raj); font-weight:700; font-size:15px; letter-spacing:.5px; color:#ddeaf5; text-transform:uppercase; }
+.ctrl-desc { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:2px; }
 .ctrl-out { text-align:right; }
-.ctrl-val { font-family:var(--orb); font-size:16px; font-weight:700; color:var(--orange); filter:drop-shadow(0 0 5px rgba(247,147,26,.5)); line-height:1; }
-.ctrl-unit { font-family:var(--mono); font-size:8px; color:var(--text-dim); margin-top:1px; }
+.ctrl-val { font-family:var(--orb); font-size:18px; font-weight:700; color:var(--orange); filter:drop-shadow(0 0 5px rgba(247,147,26,.5)); line-height:1; }
+.ctrl-unit { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:1px; }
 .ctrl-live-badge {
   display: inline-flex; align-items: center; gap: 4px;
   font-family: var(--mono); font-size: 7px; letter-spacing: 1px; color: var(--green);
@@ -194,6 +194,21 @@ input[type=range]::-webkit-slider-thumb {
 }
 input[type=range]::-webkit-slider-thumb:hover { box-shadow:0 0 18px rgba(247,147,26,.9); }
 
+/* +/- stepper */
+.stepper { display:flex; align-items:center; gap:8px; margin-top:7px; }
+.step-btn {
+  width:26px; height:26px; border-radius:4px;
+  border:1px solid var(--orange-border2);
+  background:rgba(247,147,26,0.08); color:var(--orange);
+  font-size:17px; font-weight:700; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .15s, box-shadow .15s;
+  flex-shrink:0; user-select:none; -webkit-user-select:none;
+}
+.step-btn:hover { background:rgba(247,147,26,0.22); box-shadow:0 0 10px rgba(247,147,26,0.3); }
+.step-btn:active { background:rgba(247,147,26,0.4); }
+.step-track { flex:1; }
+
 /* Donut */
 .donut-wrap { display:flex; flex-direction:column; align-items:center; gap:14px; }
 .donut-ring-wrap { position:relative; width:150px; height:150px; }
@@ -202,7 +217,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow:0 0 18px rgba(247,147
 .dc-val { font-family:var(--orb); font-size:20px; font-weight:900; color:var(--orange); filter:drop-shadow(0 0 8px rgba(247,147,26,.6)); line-height:1; }
 .dc-lbl { font-family:var(--mono); font-size:7px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-top:2px; }
 .donut-key { width:100%; display:flex; flex-direction:column; gap:5px; }
-.dk-row { display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:9px; }
+.dk-row { display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:11px; }
 .dk-left { display:flex; align-items:center; gap:7px; color:var(--text-dim); }
 .dk-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
 .dk-val { color:#bdd; }
@@ -219,9 +234,9 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow:0 0 18px rgba(247,147
 .mcard:hover { border-color:var(--orange-border2); }
 .mcard::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--mc,var(--orange)),transparent); }
 .mcard::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 0% 100%,rgba(247,147,26,.05),transparent 65%); pointer-events:none; }
-.mc-lbl { font-family:var(--mono); font-size:8px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-bottom:8px; }
-.mc-val { font-family:var(--orb); font-size:22px; font-weight:700; line-height:1; color:var(--mc,var(--orange)); filter:drop-shadow(0 0 5px var(--mc,var(--orange))); transition:color .3s,filter .3s; }
-.mc-sub { font-family:var(--mono); font-size:9px; color:var(--text-dim); margin-top:5px; }
+.mc-lbl { font-family:var(--mono); font-size:10px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-bottom:8px; }
+.mc-val { font-family:var(--orb); font-size:24px; font-weight:700; line-height:1; color:var(--mc,var(--orange)); filter:drop-shadow(0 0 5px var(--mc,var(--orange))); transition:color .3s,filter .3s; }
+.mc-sub { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:5px; }
 
 /* Chart */
 .chart-box { background:var(--bg2); border:1px solid var(--orange-border); border-radius:8px; padding:20px 22px; position:relative; }
@@ -235,8 +250,8 @@ canvas#mainChart { display:block; width:100% !important; }
 /* Bottom */
 .bottom { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .bcard { background:var(--bg2); border:1px solid var(--orange-border); border-radius:8px; padding:16px 18px; }
-.bcard-title { font-family:var(--orb); font-size:8px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px; }
-.dr { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.04); font-family:var(--mono); font-size:10px; }
+.bcard-title { font-family:var(--orb); font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px; }
+.dr { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.04); font-family:var(--mono); font-size:12px; }
 .dr:last-child { border-bottom:none; }
 .dr .dl { color:var(--text-dim); }
 .dr .dv { color:var(--orange); font-weight:bold; }
@@ -250,7 +265,7 @@ canvas#mainChart { display:block; width:100% !important; }
   border:1px solid rgba(247,147,26,.3); border-radius:8px; padding:16px 18px;
 }
 .verdict-title { font-family:var(--orb); font-size:8px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
-.verdict-text { font-family:var(--raj); font-size:14px; font-weight:400; line-height:1.7; color:var(--text); }
+.verdict-text { font-family:var(--raj); font-size:16px; font-weight:400; line-height:1.7; color:var(--text); }
 .verdict-text strong { color:var(--orange); font-weight:700; }
 .verdict-text .vg { color:var(--green); font-weight:700; }
 .verdict-text .vr { color:var(--red); font-weight:700; }
@@ -396,7 +411,11 @@ canvas#mainChart { display:block; width:100% !important; }
               <div class="ctrl-unit">people</div>
             </div>
           </div>
-          <input type="range" id="sl-s" min="1000" max="250000000" step="1000" value="100000">
+          <div class="stepper">
+            <button class="step-btn" onclick="stepSlider('sl-s',-1)">−</button>
+            <div class="step-track"><input type="range" id="sl-s" min="1000" max="21000000" step="1000" value="100000"></div>
+            <button class="step-btn" onclick="stepSlider('sl-s',1)">+</button>
+          </div>
         </div>
 
         <div class="ctrl">
@@ -410,7 +429,11 @@ canvas#mainChart { display:block; width:100% !important; }
               <div class="ctrl-unit">USD / month</div>
             </div>
           </div>
-          <input type="range" id="sl-d" min="10" max="10000" step="10" value="200">
+          <div class="stepper">
+            <button class="step-btn" onclick="stepSlider('sl-d',-1)">−</button>
+            <div class="step-track"><input type="range" id="sl-d" min="10" max="10000" step="10" value="200"></div>
+            <button class="step-btn" onclick="stepSlider('sl-d',1)">+</button>
+          </div>
         </div>
 
         <div class="ctrl">
@@ -425,7 +448,11 @@ canvas#mainChart { display:block; width:100% !important; }
               <div class="ctrl-unit">USD / BTC</div>
             </div>
           </div>
-          <input type="range" id="sl-p" min="10000" max="1000000" step="1000" value="74000">
+          <div class="stepper">
+            <button class="step-btn" onclick="stepSlider('sl-p',-1)">−</button>
+            <div class="step-track"><input type="range" id="sl-p" min="10000" max="1000000" step="1000" value="74000"></div>
+            <button class="step-btn" onclick="stepSlider('sl-p',1)">+</button>
+          </div>
         </div>
 
         <div class="ctrl">
@@ -439,7 +466,11 @@ canvas#mainChart { display:block; width:100% !important; }
               <div class="ctrl-unit">BTC</div>
             </div>
           </div>
-          <input type="range" id="sl-f" min="100000" max="6000000" step="50000" value="2210000">
+          <div class="stepper">
+            <button class="step-btn" onclick="stepSlider('sl-f',-1)">−</button>
+            <div class="step-track"><input type="range" id="sl-f" min="100000" max="6000000" step="50000" value="2210000"></div>
+            <button class="step-btn" onclick="stepSlider('sl-f',1)">+</button>
+          </div>
         </div>
 
         <div class="ctrl">
@@ -453,21 +484,29 @@ canvas#mainChart { display:block; width:100% !important; }
               <div class="ctrl-unit">BTC / month</div>
             </div>
           </div>
-          <input type="range" id="sl-m" min="0" max="50000" step="100" value="13500">
+          <div class="stepper">
+            <button class="step-btn" onclick="stepSlider('sl-m',-1)">−</button>
+            <div class="step-track"><input type="range" id="sl-m" min="0" max="50000" step="100" value="13500"></div>
+            <button class="step-btn" onclick="stepSlider('sl-m',1)">+</button>
+          </div>
         </div>
 
         <div class="ctrl">
           <div class="ctrl-head">
             <div>
               <div class="ctrl-lbl">Stacker Growth</div>
-              <div class="ctrl-desc">Monthly % increase in new participants</div>
+              <div class="ctrl-desc">Yearly % increase in new participants</div>
             </div>
             <div class="ctrl-out">
-              <div class="ctrl-val" id="vv-g">2%</div>
-              <div class="ctrl-unit">per month</div>
+              <div class="ctrl-val" id="vv-g">20%</div>
+              <div class="ctrl-unit">per year</div>
             </div>
           </div>
-          <input type="range" id="sl-g" min="0" max="15" step="0.5" value="2">
+          <div class="stepper">
+            <button class="step-btn" onclick="stepSlider('sl-g',-1)">−</button>
+            <div class="step-track"><input type="range" id="sl-g" min="0" max="200" step="1" value="20"></div>
+            <button class="step-btn" onclick="stepSlider('sl-g',1)">+</button>
+          </div>
         </div>
 
       </div>
@@ -704,7 +743,7 @@ function updateLabels(p) {
   setTxt('vv-p', '$'+p.price.toLocaleString());
   setTxt('vv-f', fmt(p.float,2));
   setTxt('vv-m', p.mined.toLocaleString());
-  setTxt('vv-g', p.growth+'%');
+  setTxt('vv-g', p.growth+'%'); // yearly
   setTxt('t-float', '~'+fmt(p.float,2)+'M');
   setTxt('dk-float', '~'+fmt(p.float,2)+'M (~'+(p.float/20000000*100).toFixed(0)+'%)');
   setTxt('dc-pct', (p.float/20000000*100).toFixed(1)+'%');
@@ -742,8 +781,9 @@ function simulate(p) {
   let float=initFloat, cumS=0, cumI=0;
   const fArr=[float], sArr=[0], iArr=[0];
   let exM=null, h50=null, h90=null;
+  const monthlyGrowth = Math.pow(1 + growth/100, 1/12) - 1;
   for(let i=1;i<=MONTHS;i++){
-    const cs=stackers*Math.pow(1+growth/100,i);
+    const cs=stackers*Math.pow(1+monthlyGrowth,i);
     const buy=(cs*dca)/price;
     float=Math.max(0,float-(buy-mined));
     cumS+=buy; cumI+=mined;
@@ -916,6 +956,20 @@ function drawDonut(floatVal){
   ctx.fillStyle='#07101a'; ctx.fill();
   ctx.beginPath(); ctx.arc(cx,cy,r-1,0,Math.PI*2);
   ctx.strokeStyle='rgba(247,147,26,0.1)'; ctx.lineWidth=1; ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════
+//  STEPPER BUTTONS
+// ═══════════════════════════════════════════════
+function stepSlider(id, dir) {
+  const el = document.getElementById(id);
+  const step = parseFloat(el.step) || 1;
+  const min  = parseFloat(el.min);
+  const max  = parseFloat(el.max);
+  const newVal = Math.min(max, Math.max(min, parseFloat(el.value) + dir * step));
+  el.value = newVal;
+  fillSlider(el);
+  onInput();
 }
 
 // ═══════════════════════════════════════════════
