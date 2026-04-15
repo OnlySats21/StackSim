@@ -101,8 +101,8 @@ header {
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 1.8s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 .live-api-item { display: flex; flex-direction: column; }
-.lai-label { font-family: var(--mono); font-size: 7px; letter-spacing: 1.5px; color: var(--text-dim); }
-.lai-val { font-family: var(--orb); font-size: 11px; font-weight: 700; color: var(--orange); letter-spacing: 1px; }
+.lai-label { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text-dim); }
+.lai-val { font-family: var(--orb); font-size: 13px; font-weight: 700; color: var(--orange); letter-spacing: 1px; }
 .live-divider { width: 1px; height: 28px; background: rgba(247,147,26,0.15); }
 
 .last-updated { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; color: var(--text-dim); }
@@ -128,7 +128,7 @@ header {
   overflow-y: auto;
 }
 .sec-title {
-  font-family: var(--orb); font-size: 10px; font-weight: 700;
+  font-family: var(--orb); font-size: 11px; font-weight: 700;
   letter-spacing: 4px; color: var(--text-dim); text-transform: uppercase;
   display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
 }
@@ -209,6 +209,29 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow:0 0 18px rgba(247,147
 .step-btn:active { background:rgba(247,147,26,0.4); }
 .step-track { flex:1; }
 
+/* Direct type-in input */
+.type-input {
+  width: 100%;
+  margin-top: 7px;
+  background: rgba(247,147,26,0.06);
+  border: 1px solid var(--orange-border2);
+  border-radius: 5px;
+  color: var(--orange);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  text-align: center;
+  letter-spacing: 1px;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.type-input:focus {
+  border-color: var(--orange);
+  background: rgba(247,147,26,0.12);
+  box-shadow: 0 0 10px rgba(247,147,26,0.2);
+}
+.type-input::placeholder { color: var(--text-dim); }
+
 /* Donut */
 .donut-wrap { display:flex; flex-direction:column; align-items:center; gap:14px; }
 .donut-ring-wrap { position:relative; width:150px; height:150px; }
@@ -241,9 +264,9 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow:0 0 18px rgba(247,147
 /* Chart */
 .chart-box { background:var(--bg2); border:1px solid var(--orange-border); border-radius:8px; padding:20px 22px; position:relative; }
 .chart-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-.chart-title { font-family:var(--orb); font-size:9px; font-weight:700; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; }
+.chart-title { font-family:var(--orb); font-size:11px; font-weight:700; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; }
 .legend { display:flex; gap:16px; }
-.leg { display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:9px; color:var(--text-dim); }
+.leg { display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; color:var(--text-dim); }
 .leg-line { width:20px; height:3px; border-radius:2px; }
 canvas#mainChart { display:block; width:100% !important; }
 
@@ -264,7 +287,7 @@ canvas#mainChart { display:block; width:100% !important; }
   background:linear-gradient(135deg,rgba(247,147,26,.07),rgba(247,147,26,.02));
   border:1px solid rgba(247,147,26,.3); border-radius:8px; padding:16px 18px;
 }
-.verdict-title { font-family:var(--orb); font-size:8px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
+.verdict-title { font-family:var(--orb); font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
 .verdict-text { font-family:var(--raj); font-size:16px; font-weight:400; line-height:1.7; color:var(--text); }
 .verdict-text strong { color:var(--orange); font-weight:700; }
 .verdict-text .vg { color:var(--green); font-weight:700; }
@@ -416,6 +439,7 @@ canvas#mainChart { display:block; width:100% !important; }
             <div class="step-track"><input type="range" id="sl-s" min="1000" max="21000000" step="1000" value="100000"></div>
             <button class="step-btn" onclick="stepSlider('sl-s',1)">+</button>
           </div>
+          <input type="number" class="type-input" id="ti-s" placeholder="Type number of stackers..." min="1000" max="1000000000">
         </div>
 
         <div class="ctrl">
@@ -434,6 +458,7 @@ canvas#mainChart { display:block; width:100% !important; }
             <div class="step-track"><input type="range" id="sl-d" min="10" max="10000" step="10" value="200"></div>
             <button class="step-btn" onclick="stepSlider('sl-d',1)">+</button>
           </div>
+          <input type="number" class="type-input" id="ti-d" placeholder="Type USD amount..." min="10" max="10000">
         </div>
 
         <div class="ctrl">
@@ -453,6 +478,7 @@ canvas#mainChart { display:block; width:100% !important; }
             <div class="step-track"><input type="range" id="sl-p" min="10000" max="1000000" step="1000" value="74000"></div>
             <button class="step-btn" onclick="stepSlider('sl-p',1)">+</button>
           </div>
+          <input type="number" class="type-input" id="ti-p" placeholder="Type BTC price in USD..." min="10000" max="1000000">
         </div>
 
         <div class="ctrl">
@@ -471,6 +497,7 @@ canvas#mainChart { display:block; width:100% !important; }
             <div class="step-track"><input type="range" id="sl-f" min="100000" max="6000000" step="50000" value="2210000"></div>
             <button class="step-btn" onclick="stepSlider('sl-f',1)">+</button>
           </div>
+          <input type="number" class="type-input" id="ti-f" placeholder="Type exchange float in BTC..." min="100000" max="6000000">
         </div>
 
         <div class="ctrl">
@@ -489,6 +516,27 @@ canvas#mainChart { display:block; width:100% !important; }
             <div class="step-track"><input type="range" id="sl-m" min="0" max="50000" step="100" value="13500"></div>
             <button class="step-btn" onclick="stepSlider('sl-m',1)">+</button>
           </div>
+          <input type="number" class="type-input" id="ti-m" placeholder="Type monthly BTC issuance..." min="0" max="50000">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <div>
+              <div class="ctrl-lbl">Strategy Monthly Buy</div>
+              <div class="ctrl-desc">Est. BTC Strategy buys per month</div>
+              <div class="ctrl-live-badge">VERIFIED · Mar 2026 avg</div>
+            </div>
+            <div class="ctrl-out">
+              <div class="ctrl-val" id="vv-st">46,233</div>
+              <div class="ctrl-unit">BTC / month</div>
+            </div>
+          </div>
+          <div class="stepper">
+            <button class="step-btn" onclick="stepSlider('sl-st',-1)">−</button>
+            <div class="step-track"><input type="range" id="sl-st" min="0" max="200000" step="500" value="46233"></div>
+            <button class="step-btn" onclick="stepSlider('sl-st',1)">+</button>
+          </div>
+          <input type="number" class="type-input" id="ti-st" placeholder="Type Strategy monthly BTC buy..." min="0" max="200000">
         </div>
 
         <div class="ctrl">
@@ -507,6 +555,7 @@ canvas#mainChart { display:block; width:100% !important; }
             <div class="step-track"><input type="range" id="sl-g" min="0" max="200" step="1" value="20"></div>
             <button class="step-btn" onclick="stepSlider('sl-g',1)">+</button>
           </div>
+          <input type="number" class="type-input" id="ti-g" placeholder="Type yearly growth %..." min="0" max="200">
         </div>
 
       </div>
@@ -525,6 +574,7 @@ canvas#mainChart { display:block; width:100% !important; }
         <div class="donut-key">
           <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#ff3d5a"></div>Lost Forever</div><div class="dk-val">~3.2M (~16%)</div></div>
           <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#ff8844"></div>Long-Term HODLers</div><div class="dk-val">~14.5M (~73%)</div></div>
+          <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#f7931a"></div>Strategy (MSTR)</div><div class="dk-val">780,897 (~3.9%)</div></div>
           <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#00e676"></div>Exchange Float</div><div class="dk-val" id="dk-float">~2.21M (~11%)</div></div>
           <div class="dk-row"><div class="dk-left"><div class="dk-dot" style="background:#223344"></div>Dust / Other</div><div class="dk-val">~200K (~1%)</div></div>
         </div>
@@ -536,6 +586,7 @@ canvas#mainChart { display:block; width:100% !important; }
       <div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);line-height:2.0;">
         <span style="color:var(--green)">LIVE</span> BTC Price — CoinGecko public API<br>
         <span style="color:var(--green)">LIVE</span> Circulating supply — Blockchain.info API<br>
+        <span style="color:#f7931a">STATIC</span> Strategy (MSTR): 780,897 BTC (8-K Apr 13 2026)<br>
         <span style="color:#f7931a">STATIC</span> Lost coins: ~3.2M (Chainalysis 2025)<br>
         <span style="color:#f7931a">STATIC</span> Exchange float: 2.21M (Glassnode Mar 2026)<br>
         <span style="color:#f7931a">STATIC</span> LTH: ~14.5M (Glassnode 155+ day wallets)<br>
@@ -589,6 +640,8 @@ canvas#mainChart { display:block; width:100% !important; }
       <div class="bcard">
         <div class="bcard-title">Absorption Breakdown</div>
         <div class="dr"><span class="dl">Monthly Buy Pressure (BTC)</span><span class="dv" id="b-buy">—</span></div>
+        <div class="dr"><span class="dl">↳ DCA Stackers</span><span class="dv" id="b-stackers">—</span></div>
+        <div class="dr"><span class="dl">↳ Strategy (MSTR)</span><span class="dv" id="b-strat">—</span></div>
         <div class="dr"><span class="dl">Monthly Issuance (BTC)</span><span class="dv b" id="b-iss">—</span></div>
         <div class="dr"><span class="dl">Net Float Δ per Month</span><span class="dv" id="b-net">—</span></div>
         <div class="dr"><span class="dl">Annual USD Buy Pressure</span><span class="dv" id="b-ann">—</span></div>
@@ -600,6 +653,79 @@ canvas#mainChart { display:block; width:100% !important; }
         <div class="verdict-title">⚡ Simulation Analysis</div>
         <div class="verdict-text" id="verdict">Loading live data...</div>
       </div>
+    </div>
+
+    <!-- ── STRATEGY FULL-WIDTH HORIZONTAL BAR ── -->
+    <div style="background:linear-gradient(135deg,rgba(247,147,26,0.08),rgba(247,147,26,0.02));border:1px solid rgba(247,147,26,0.35);border-radius:8px;padding:16px 20px;">
+      
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-family:var(--orb);font-size:16px;font-weight:900;color:var(--orange);letter-spacing:3px;filter:drop-shadow(0 0 6px rgba(247,147,26,0.5));">STRATEGY</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:1px;">NASDAQ: MSTR · World's Largest Corporate Bitcoin Holder · Data: 8-K Apr 13, 2026</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--red);background:rgba(255,61,90,0.1);border:1px solid rgba(255,61,90,0.25);border-radius:4px;padding:4px 12px;letter-spacing:1px;">PERMANENTLY OFF EXCHANGES</div>
+      </div>
+
+      <!-- Stats grid -->
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:center;">
+        
+        <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:12px 14px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Total BTC Held</div>
+          <div style="font-family:var(--orb);font-size:18px;font-weight:900;color:var(--orange);filter:drop-shadow(0 0 5px rgba(247,147,26,0.5));line-height:1;">780,897</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:4px;">as of Apr 13 2026</div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:12px 14px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Avg Cost Basis</div>
+          <div style="font-family:var(--orb);font-size:18px;font-weight:900;color:var(--orange2);line-height:1;">$75,577</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:4px;">per BTC</div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:12px 14px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Total Invested</div>
+          <div style="font-family:var(--orb);font-size:18px;font-weight:900;color:var(--orange2);line-height:1;">$59.02B</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:4px;">aggregate cost</div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:12px 14px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Last Purchase</div>
+          <div style="font-family:var(--orb);font-size:18px;font-weight:900;color:var(--green);filter:drop-shadow(0 0 5px rgba(0,230,118,0.4));line-height:1;">+13,927</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:4px;">BTC · Apr 6–12 2026</div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:12px 14px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Last Buy Price</div>
+          <div style="font-family:var(--orb);font-size:18px;font-weight:900;color:var(--orange2);line-height:1;">$71,902</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:4px;">avg · $1.00B spent</div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:12px 14px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">% of Hard Cap</div>
+          <div style="font-family:var(--orb);font-size:18px;font-weight:900;color:var(--red);filter:drop-shadow(0 0 5px rgba(255,61,90,0.4));line-height:1;">3.72%</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:4px;">of 21M max supply</div>
+        </div>
+
+        <!-- Progress to 1M with bar -->
+        <div style="background:var(--bg2);border:1px solid var(--orange-border);border-radius:6px;padding:12px 14px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">To 1M BTC Goal</div>
+          <div style="font-family:var(--orb);font-size:18px;font-weight:900;color:var(--green);filter:drop-shadow(0 0 5px rgba(0,230,118,0.4));line-height:1;">78.1%</div>
+          <div style="margin-top:6px;height:5px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+            <div style="height:100%;width:78.1%;background:linear-gradient(to right,var(--orange),#ffaa44);border-radius:2px;box-shadow:0 0 6px rgba(247,147,26,0.5);"></div>
+          </div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:4px;">219,103 BTC remaining</div>
+        </div>
+
+      </div>
+
+      <!-- Supply impact note -->
+      <div style="margin-top:12px;padding:12px 16px;background:rgba(255,61,90,0.05);border:1px solid rgba(255,61,90,0.18);border-radius:6px;display:flex;align-items:center;gap:16px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:2px;flex-shrink:0;">⚠ SUPPLY IMPACT</div>
+        <div style="font-family:var(--raj);font-size:15px;color:var(--text);line-height:1.6;">
+          Strategy's <strong style="color:var(--orange)">780,897 BTC</strong> sit in cold storage and will <strong style="color:var(--red)">never return to exchanges</strong> — permanently removing the equivalent of <strong style="color:var(--orange)">35.3× the entire current exchange float</strong> from tradeable supply. In March 2026 alone, Strategy absorbed <strong style="color:var(--green)">~46,233 BTC</strong> — nearly <strong style="color:var(--green)">3× what miners produced</strong> that month.
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -623,6 +749,8 @@ const MAX_CAP      = 21000000;
 const LOST         = 3200000;
 const LTH          = 14500000;
 const DUST         = 200000;
+const STRATEGY_HELD   = 780897;    // BTC held as of Apr 13 2026 — permanently off market
+const STRATEGY_MONTHLY = 46233;    // Avg BTC/month Strategy bought in Mar 2026 (verified)
 const DEFAULT_FLOAT   = 2210000;   // Glassnode Mar 2026
 const DEFAULT_PRICE   = 74000;     // fallback if API fails
 const DEFAULT_SUPPLY  = 20000000;  // fallback
@@ -721,6 +849,7 @@ const SL = {
   p: document.getElementById('sl-p'),
   f: document.getElementById('sl-f'),
   m: document.getElementById('sl-m'),
+  st: document.getElementById('sl-st'),
   g: document.getElementById('sl-g'),
 };
 
@@ -732,7 +861,7 @@ function fillSlider(el) {
 function readParams() {
   return {
     stackers: +SL.s.value, dca: +SL.d.value, price: +SL.p.value,
-    float: +SL.f.value, mined: +SL.m.value, growth: +SL.g.value,
+    float: +SL.f.value, mined: +SL.m.value, strategy: +SL.st.value, growth: +SL.g.value,
   };
 }
 
@@ -743,6 +872,7 @@ function updateLabels(p) {
   setTxt('vv-p', '$'+p.price.toLocaleString());
   setTxt('vv-f', fmt(p.float,2));
   setTxt('vv-m', p.mined.toLocaleString());
+  setTxt('vv-st', p.strategy.toLocaleString());
   setTxt('vv-g', p.growth+'%'); // yearly
   setTxt('t-float', '~'+fmt(p.float,2)+'M');
   setTxt('dk-float', '~'+fmt(p.float,2)+'M (~'+(p.float/20000000*100).toFixed(0)+'%)');
@@ -771,12 +901,13 @@ function applyLiveData(livePrice, liveSupply) {
 //  SIMULATE
 // ═══════════════════════════════════════════════
 function simulate(p) {
-  const { stackers, dca, price, float: initFloat, mined, growth } = p;
+  const { stackers, dca, price, float: initFloat, mined, strategy, growth } = p;
   const MONTHS = 120;
   const mBuyUSD = stackers * dca;
   const mBuyBTC = mBuyUSD / price;
-  const netAbs = mBuyBTC - mined;
-  const pressRatio = mBuyBTC / Math.max(mined, 1);
+  const totalMonthlyDemand = mBuyBTC + strategy;  // stackers + Strategy combined
+  const netAbs = totalMonthlyDemand - mined;
+  const pressRatio = totalMonthlyDemand / Math.max(mined, 1);
 
   let float=initFloat, cumS=0, cumI=0;
   const fArr=[float], sArr=[0], iArr=[0];
@@ -784,9 +915,10 @@ function simulate(p) {
   const monthlyGrowth = Math.pow(1 + growth/100, 1/12) - 1;
   for(let i=1;i<=MONTHS;i++){
     const cs=stackers*Math.pow(1+monthlyGrowth,i);
-    const buy=(cs*dca)/price;
-    float=Math.max(0,float-(buy-mined));
-    cumS+=buy; cumI+=mined;
+    const stackerBuy=(cs*dca)/price;
+    const totalBuy = stackerBuy + strategy;  // Strategy buys constant monthly amount
+    float=Math.max(0,float-(totalBuy-mined));
+    cumS+=totalBuy; cumI+=mined;
     fArr.push(float); sArr.push(cumS); iArr.push(cumI);
     if(!exM&&float<=0) exM=i;
     if(!h50&&float<=initFloat*.5) h50=i;
@@ -795,8 +927,8 @@ function simulate(p) {
 
   const etaTxt = exM?(exM<12?exM+' mo':(exM/12).toFixed(1)+' yrs'):'> 10 yrs';
 
-  setTxt('mc-dem', fmtBTC(mBuyBTC));
-  setTxt('mc-dem2', fmtUSD(mBuyUSD)+' / month');
+  setTxt('mc-dem', fmtBTC(totalMonthlyDemand));
+  setTxt('mc-dem2', fmtUSD(mBuyUSD)+' stackers + '+fmtBTC(strategy)+' MSTR');
 
   const netEl=document.getElementById('mc-net');
   netEl.textContent=(netAbs>0?'−':'+')+fmtBTC(Math.abs(netAbs));
@@ -812,7 +944,9 @@ function simulate(p) {
   piEl.style.color=pressRatio>5?'var(--red)':pressRatio>2?'var(--orange)':'var(--green)';
   setTxt('mc-pi2', pressRatio>1?'Demand > Supply ↑':'Supply > Demand ↓');
 
-  setTxt('b-buy', fmtBTC(mBuyBTC));
+  setTxt('b-buy', fmtBTC(totalMonthlyDemand));
+  setTxt('b-stackers', fmtBTC(mBuyBTC));
+  setTxt('b-strat', fmtBTC(strategy));
   setTxt('b-iss', fmtBTC(mined));
   const bnet=document.getElementById('b-net');
   bnet.textContent=(netAbs>0?'−':'+')+fmtBTC(Math.abs(netAbs));
@@ -941,9 +1075,14 @@ function drawDonut(floatVal){
   cv.width=150*dpr; cv.height=150*dpr; cv.style.width='150px'; cv.style.height='150px';
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,150,150);
   const cx=75, cy=75, R=65, r=46;
+  const STRATEGY = STRATEGY_HELD;
   const segs=[
-    {v:LOST,c:'#ff3d5a'},{v:LTH,c:'#ff8844'},{v:floatVal,c:'#00e676'},
-    {v:DUST,c:'#223344'},{v:Math.max(0,20000000-LOST-LTH-floatVal-DUST),c:'#1a2a38'},
+    {v:LOST,c:'#ff3d5a'},
+    {v:LTH,c:'#ff8844'},
+    {v:STRATEGY,c:'#f7931a'},
+    {v:floatVal,c:'#00e676'},
+    {v:DUST,c:'#223344'},
+    {v:Math.max(0,20000000-LOST-LTH-STRATEGY-floatVal-DUST),c:'#1a2a38'},
   ];
   let a=-Math.PI/2;
   segs.forEach(s=>{
@@ -957,6 +1096,49 @@ function drawDonut(floatVal){
   ctx.beginPath(); ctx.arc(cx,cy,r-1,0,Math.PI*2);
   ctx.strokeStyle='rgba(247,147,26,0.1)'; ctx.lineWidth=1; ctx.stroke();
 }
+
+// ═══════════════════════════════════════════════
+//  TYPE-IN INPUTS — sync with sliders
+// ═══════════════════════════════════════════════
+const TI_MAP = [
+  { ti: 'ti-s',  sl: 'sl-s'  },
+  { ti: 'ti-d',  sl: 'sl-d'  },
+  { ti: 'ti-p',  sl: 'sl-p'  },
+  { ti: 'ti-f',  sl: 'sl-f'  },
+  { ti: 'ti-m',  sl: 'sl-m'  },
+  { ti: 'ti-st', sl: 'sl-st' },
+  { ti: 'ti-g',  sl: 'sl-g'  },
+];
+
+function syncTypeInputs() {
+  TI_MAP.forEach(({ ti, sl }) => {
+    const tiEl = document.getElementById(ti);
+    const slEl = document.getElementById(sl);
+    if (tiEl && slEl) tiEl.value = slEl.value;
+  });
+}
+
+TI_MAP.forEach(({ ti, sl }) => {
+  const tiEl = document.getElementById(ti);
+  const slEl = document.getElementById(sl);
+  if (!tiEl || !slEl) return;
+
+  // When user types a number → update slider
+  tiEl.addEventListener('input', () => {
+    const v = parseFloat(tiEl.value);
+    if (!isNaN(v)) {
+      const clamped = Math.min(parseFloat(slEl.max), Math.max(parseFloat(slEl.min), v));
+      slEl.value = clamped;
+      fillSlider(slEl);
+      onInput();
+    }
+  });
+
+  // When slider moves → update type-in box
+  slEl.addEventListener('input', () => {
+    tiEl.value = slEl.value;
+  });
+});
 
 // ═══════════════════════════════════════════════
 //  STEPPER BUTTONS
@@ -990,6 +1172,7 @@ window.addEventListener('resize',onInput);
   const { price, supply } = await fetchLiveData();
   applyLiveData(price, supply);
   hideLoader();
+  syncTypeInputs();
   onInput();
 
   // Auto-refresh price every 5 minutes silently
